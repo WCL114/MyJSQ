@@ -44,6 +44,13 @@ if __name__ == "__main__":
     # main.py
     parser.add_argument('--r', type=float, default=5e-5, help='activation edit strength (paper Eq.5); set to e.g. 5e-5')
 
+    parser.add_argument('--sa_search', action='store_true', help='Enable simulated annealing-based activation edit vector search')
+    parser.add_argument('--sa_Ti', type=float, default=300.0, help='Simulated annealing initial temperature')
+    parser.add_argument('--sa_Tf', type=float, default=10.0, help='Simulated annealing final temperature ')
+    parser.add_argument('--sa_steps', type=int, default=50, help='Total annealing steps')
+    parser.add_argument('--sa_eval_tokens', type=int, default=4096, help='Maximum tokens used per evaluation')
+    parser.add_argument('--sa_r_choices', type=str, default="0,4e-5,5e-5,6e-5,7e-5", help='Edit the strength candidate set R')
+
 
     args = parser.parse_args()
     main(args)
