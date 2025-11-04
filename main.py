@@ -47,8 +47,8 @@ if __name__ == "__main__":
     parser.add_argument('--sa_search', action='store_true', help='Enable simulated annealing-based activation edit vector search')
     parser.add_argument('--sa_Ti', type=float, default=300.0, help='Simulated annealing initial temperature')
     parser.add_argument('--sa_Tf', type=float, default=10.0, help='Simulated annealing final temperature ')
-    parser.add_argument('--sa_steps', type=int, default=50, help='Total annealing steps')
-    parser.add_argument('--sa_eval_tokens', type=int, default=4096, help='Maximum tokens used per evaluation')
+    parser.add_argument('--sa_steps', type=int, default=20, help='Total annealing steps')
+    parser.add_argument('--sa_eval_tokens', type=int, default=2048, help='Maximum tokens used per evaluation')
     parser.add_argument('--sa_r_choices', type=str, default="0,4e-5,5e-5,6e-5,7e-5", help='Edit the strength candidate set R')
 
 
