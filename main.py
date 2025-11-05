@@ -40,7 +40,11 @@ if __name__ == "__main__":
     parser.add_argument('--clip_h', type=float, default=0.01)
     parser.add_argument('--abs', action="store_false")
     parser.add_argument('--rho', type=float, default=2.1)
-    parser.add_argument("--nbits", type=int, default=8)
+    # --- Start of feature modification ---
+    parser.add_argument("--nbits", type=int, default=None, help='Bit width for both weights and activations (backward compatibility). If specified, overrides weight_nbits and act_nbits.')
+    parser.add_argument("--weight_nbits", type=int, default=8, help='Bit width for weight quantization (default: 8)')
+    parser.add_argument("--act_nbits", type=int, default=8, help='Bit width for activation quantization (default: 8)')
+    # --- End of feature modification ---
     # main.py
     parser.add_argument('--r', type=float, default=5e-5, help='activation edit strength (paper Eq.5); set to e.g. 5e-5')
 
