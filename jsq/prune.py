@@ -221,7 +221,13 @@ def _compress_once_with_r_map(args, model, tokenizer, r_map: Dict[str, float], d
 
         # 平滑 & 量化
         smooth_layer(layer_name, layer, act_scales, 0.5)
-        quantize_layer(layer, nbits=args.nbits)
+        # --- Start of feature modification ---
+        # Support separate weight and activation bit widths
+        weight_nbits = getattr(args, 'weight_nbits', None)
+        act_nbits = getattr(args, 'act_nbits', None)
+        nbits = getattr(args, 'nbits', None)
+        quantize_layer(layer, nbits=nbits, weight_nbits=weight_nbits, act_nbits=act_nbits)
+        # --- End of feature modification ---
 
         # 交替输入输出（与原 joint_pq 一致）
         inps, outs = outs, inps
@@ -473,10 +479,16 @@ def joint_pq(args, model, tokenizer, device=torch.device("cuda:0"), prune_n=0, p
 
     
             print(f"smoothing layer {i}")
-            smooth_layer(layer_name, layer, act_scales, 0.5) 
+            smooth_layer(layer_name, layer, act_scales, 0.5)
 
+            # --- Start of feature modification ---
             print(f"quantizing layer {i}")
-            quantize_layer(layer, nbits=args.nbits)
+            # Support separate weight and activation bit widths
+            weight_nbits = getattr(args, 'weight_nbits', None)
+            act_nbits = getattr(args, 'act_nbits', None)
+            nbits = getattr(args, 'nbits', None)
+            quantize_layer(layer, nbits=nbits, weight_nbits=weight_nbits, act_nbits=act_nbits)
+            # --- End of feature modification ---
 
             inps, outs = outs, inps
 
