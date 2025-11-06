@@ -261,6 +261,7 @@ def _simulated_annealing_search(args, model, tokenizer, device) -> Dict[str, flo
     _compress_once_with_r_map(args, curr_model, tokenizer, curr_r_map, base_device)
     curr_loss = _evaluate_lm_loss(curr_model, tokenizer, eval_input_ids, base_device, max_tokens=getattr(args, "sa_eval_tokens", 4096))
     curr_P = -curr_loss
+    best_loss = curr_loss
     best_P = curr_P
     del curr_model
     torch.cuda.empty_cache()
@@ -275,20 +276,29 @@ def _simulated_annealing_search(args, model, tokenizer, device) -> Dict[str, flo
         ratio = (Tf / Ti) ** (step / steps)
         return Ti * ratio
 
+    def format_loss(val: float) -> str:
+        return f"{val:.6f}" if math.isfinite(val) else str(val)
+
+    print(f"[JSQ][SA] Initial solution loss: {format_loss(curr_loss)}", flush=True)
+
     # 5) 退火主循环
     for step in range(steps):
+        step_idx = step + 1
         T = temperature(step)
+        progress_prefix = f"[JSQ][SA] Step {step_idx}/{steps}"
         # 随机挑一个层，随机换一个不同的候选r
         l_name = random.choice(layer_names)
         old_r = curr_r_map[l_name]
         cand_choices = [v for v in R if v != old_r]
         if len(cand_choices) == 0:
+            print(f"\r{progress_prefix} | no alternative r for {l_name}, skipping.", end="", flush=True)
             continue
         new_r = random.choice(cand_choices)
 
         prop_r_map = dict(curr_r_map)
         prop_r_map[l_name] = new_r
 
+        print(f"\r{progress_prefix} | probing {l_name} -> {new_r:.2e} | T={T:.3f}...", end="", flush=True)
         # 用候选向量复制并压缩评估
         prop_model = _copy.deepcopy(model).to(base_device)
         _compress_once_with_r_map(args, prop_model, tokenizer, prop_r_map, base_device)
@@ -303,12 +313,22 @@ def _simulated_annealing_search(args, model, tokenizer, device) -> Dict[str, flo
         if accept:
             curr_r_map = prop_r_map
             curr_P = prop_P
+            curr_loss = prop_loss
 
         # 记录全局最优
         if prop_P > best_P:
             best_P = prop_P
             best_r_map = prop_r_map
+            best_loss = prop_loss
 
+        accept_str = "accepted" if accept else "rejected"
+        print(
+            f"\r{progress_prefix} | curr_loss={format_loss(curr_loss)} | best_loss={format_loss(best_loss)} | {accept_str}   ",
+            end="",
+            flush=True,
+        )
+
+    print()
     return best_r_map
 # --- END IMPLEMENTATION ---
 
