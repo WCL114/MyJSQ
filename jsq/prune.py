@@ -265,7 +265,7 @@ def _simulated_annealing_search(args, model, tokenizer, device) -> Dict[str, flo
     base_device = device
     curr_model = _copy.deepcopy(model).to(base_device)
     _compress_once_with_r_map(args, curr_model, tokenizer, curr_r_map, base_device)
-    curr_loss = _evaluate_lm_loss(curr_model, tokenizer, eval_input_ids, base_device, max_tokens=getattr(args, "sa_eval_tokens", 4096))
+    curr_loss = _evaluate_lm_loss(curr_model, eval_input_ids, base_device, max_tokens=getattr(args, "sa_eval_tokens", 4096))
     curr_P = -curr_loss
     best_P = curr_P
     del curr_model
@@ -298,7 +298,7 @@ def _simulated_annealing_search(args, model, tokenizer, device) -> Dict[str, flo
         # 用候选向量复制并压缩评估
         prop_model = _copy.deepcopy(model).to(base_device)
         _compress_once_with_r_map(args, prop_model, tokenizer, prop_r_map, base_device)
-        prop_loss = _evaluate_lm_loss(prop_model, tokenizer, eval_input_ids, base_device, max_tokens=getattr(args, "sa_eval_tokens", 4096))
+        prop_loss = _evaluate_lm_loss(prop_model, eval_input_ids, base_device, max_tokens=getattr(args, "sa_eval_tokens", 4096))
         prop_P = -prop_loss
         del prop_model
         torch.cuda.empty_cache()
